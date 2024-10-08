@@ -1,4 +1,4 @@
-// auth.js
+// auth.js YOUNESS ZAHID CHRIF
 import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from './firebase.js';
 
 // Función para registrar un usuario
