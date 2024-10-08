@@ -1,0 +1,19 @@
+
+{
+  "name": "trendyshop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",  
+  "scripts": {
+    "start": "node index.js", 
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "", 
+  "license": "ISC",
+  "description": "Aplicación web de una tienda de ropa online llamada TrendyShop",
+  "dependencies": {
+    "firebase": "^10.14.0"
+  }
+}
+
