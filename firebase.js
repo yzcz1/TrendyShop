@@ -1,6 +1,6 @@
- // firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail } from "firebase/auth";
+import { getFirestore, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, collection } from "firebase/firestore"; // Importar Firestore
 
 // Firebase configuration (reemplaza con la tuya de Firebase Console)
 const firebaseConfig = {
@@ -11,11 +11,12 @@ const firebaseConfig = {
     messagingSenderId: "932892165727",
     appId: "1:932892165727:web:8a94e215e2b14885c03dea",
     measurementId: "G-KD85X1GM3V"
-  };
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app); // Inicializar Firestore
 
-export { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail };
-
+// Exportar funcionalidades de Firebase
+export { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail, setDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, collection };

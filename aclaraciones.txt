@@ -1,0 +1,3 @@
+necesitas instalar las dependencias:
+-Hacer npm install
+-npm install readline-sync
