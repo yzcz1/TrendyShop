@@ -55,55 +55,75 @@ async function initializeAdmin() {
 
 // Función para registrar un usuario con datos adicionales (no para admin)
 async function registerUser(email, password, nombre, apellidos, edad) {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    const newUser = new User(user.uid, nombre, apellidos, edad, email);
-
-    await setDoc(doc(db, 'users', user.uid), {
-      nombre: newUser.nombre,
-      apellidos: newUser.apellidos,
-      edad: newUser.edad,
-      email: newUser.email,
-      rol: newUser.rol
-    });
-
-    console.log("\nUsuario registrado exitosamente.".green);
-
-    return newUser;
-  } catch (error) {
-    console.error("Error al registrar el usuario:", error.message);
-    return null;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      const newUser = new User(user.uid, nombre, apellidos, edad, email);
+  
+      await setDoc(doc(db, 'users', user.uid), {
+        nombre: newUser.nombre,
+        apellidos: newUser.apellidos,
+        edad: newUser.edad,
+        email: newUser.email,
+        rol: newUser.rol
+      });
+  
+      console.log("\nUsuario registrado exitosamente.".green);
+      return newUser;
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        console.log("\nYa existe un usuario con ese correo electrónico, prueba con otro.".red);
+      } else {
+        console.error("Error al registrar el usuario:", error.message);
+      }
+      return null;
+    }
   }
-}
+  
 
 // Función para iniciar sesión
 async function loginUser(email, password) {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      console.log("Usuario inició sesión exitosamente.".green);
-
-      // Verifica si es administrador
-      if (userData.rol === 'admin') {
-        return { ...userData, uid: user.uid, admin: true }; // Marcar como admin
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("\nUsuario inició sesión exitosamente.".green);
+  
+        // Verifica si es administrador
+        if (userData.rol === 'admin') {
+          return { ...userData, uid: user.uid, admin: true }; // Marcar como admin
+        } else {
+          return { ...userData, uid: user.uid, admin: false }; // Usuario normal
+        }
       } else {
-        return { ...userData, uid: user.uid, admin: false }; // Usuario normal
+        console.error("El usuario no tiene datos asociados.");
+        return null;
       }
-    } else {
-      console.error("El usuario no tiene datos asociados.");
+    } catch (error) {
+      // Manejo de diferentes tipos de errores de autenticación
+      switch (error.code) {
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+          console.log("\nError al iniciar sesión: credenciales incorrectas.".red);
+          break;
+        case 'auth/invalid-email':
+          console.log("\nError al iniciar sesión: correo electrónico no válido.".red);
+          break;
+        case 'auth/invalid-credential':
+          console.log("\nError al iniciar sesión: credenciales inválidas. Intenta de nuevo.".red);
+          break;
+        default:
+          console.log(`\nError al iniciar sesión: ${error.message}`.red);
+      }
       return null;
     }
-  } catch (error) {
-    console.error("Error al iniciar sesión:", error.message);
-    return null;
   }
-}
+  
+  
 
 // Función para modificar los datos del usuario
 async function modifyUserData(uid, newNombre, newApellidos, newEdad) {
@@ -114,7 +134,7 @@ async function modifyUserData(uid, newNombre, newApellidos, newEdad) {
       apellidos: newApellidos,
       edad: newEdad
     });
-    console.log("Datos del usuario actualizados correctamente.");
+    console.log("\nDatos del usuario actualizados correctamente.".green);
   } catch (error) {
     console.error("Error al modificar los datos del usuario:", error.message);
   }
@@ -127,7 +147,7 @@ async function deleteUserAccount(uid) {
     if (user) {
       await deleteUser(user);
       await deleteDoc(doc(db, 'users', uid));
-      console.log("Usuario y datos eliminados correctamente.");
+      console.log("\nUsuario y datos eliminados correctamente.".green);
     } else {
       console.log("No hay usuario autenticado para eliminar.");
     }
@@ -143,7 +163,7 @@ async function logoutUser() {
     if (currentUser) {
       const email = currentUser.email;
       await signOut(auth);
-      console.log(`Usuario con el correo ${email} cerró sesión.`);
+      console.log(`\nUsuario con el correo ${email} cerró sesión.`);
       return email;
     } else {
       console.log("No hay usuario actualmente autenticado.");
@@ -159,7 +179,7 @@ async function logoutUser() {
 async function forgotPassword(email) {
   try {
     await sendPasswordResetEmail(auth, email);
-    console.log("Correo de restablecimiento de contraseña enviado a:", email);
+    console.log("\nCorreo de restablecimiento de contraseña enviado a:".cyan, email);
   } catch (error) {
     console.error("Error al enviar correo de restablecimiento:", error.message);
   }
@@ -202,7 +222,7 @@ async function createProducto(nombre, categoria, precio, descripcion) {
       precio: newProducto.precio,
       descripcion: newProducto.descripcion
     });
-    console.log("Producto agregado exitosamente.".green);
+    console.log("\nProducto agregado exitosamente.".green);
     return newProducto;
   } catch (error) {
     console.error("Error al crear el producto:", error.message);
@@ -262,7 +282,7 @@ async function modificarProducto(id, newNombre, newCategoria, newPrecio, newDesc
       precio: newPrecio,
       descripcion: newDescripcion
     });
-    console.log("Producto actualizado correctamente.");
+    console.log("\nProducto actualizado correctamente.".green);
   } catch (error) {
     console.error("Error al modificar el producto:", error.message);
   }
@@ -280,7 +300,7 @@ async function eliminarProducto(id) {
     }
 
     await deleteDoc(productoRef);
-    console.log("Producto eliminado correctamente.");
+    console.log("\nProducto eliminado correctamente.".green);
   } catch (error) {
     console.error("Error al eliminar el producto:", error.message);
   }

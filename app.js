@@ -86,7 +86,6 @@ async function handleAdminMenu(userLogged) {
         const prodPrecio = readlineSync.questionFloat('Precio: ');
         const prodDescripcion = readlineSync.question('Descripción: ');
         const nuevoProducto = await createProducto(prodNombre, prodCategoria, prodPrecio, prodDescripcion);
-        console.log(`${nuevoProducto.idSecuencial}. ${nuevoProducto.nombre} (${nuevoProducto.categoria}) - ${nuevoProducto.precio} €`);
         break;
 
       case 4:
@@ -112,11 +111,9 @@ async function handleAdminMenu(userLogged) {
           if (!productoDetalles) {
             console.log("El producto no existe.".red);
           } else {
-            console.log("Detalles del producto: ");
-            console.log(`Nombre: ${productoDetalles.nombre}`);
-            console.log(`Categoría: ${productoDetalles.categoria}`);
-            console.log(`Precio: ${productoDetalles.precio} €`);
-            console.log(`Descripción: ${productoDetalles.descripcion}`);
+            // Mostrar detalles en formato JSON bonito y coloreado
+            console.log("\nDetalles del producto:".green);
+            console.log(JSON.stringify(productoDetalles, null, 2).green);
           }
         }
         break;
@@ -153,7 +150,6 @@ async function handleAdminMenu(userLogged) {
             console.log("El producto no existe.".red);
           } else {
             await eliminarProducto(productoEliminar.id);
-            console.log("Producto eliminado correctamente.".green);
           }
         }
         break;
@@ -217,11 +213,9 @@ async function handleUserMenu(userLogged) {
           if (!productoDetalles) {
             console.log("El producto no existe.".red);
           } else {
-            console.log("Detalles del producto: ");
-            console.log(`Nombre: ${productoDetalles.nombre}`);
-            console.log(`Categoría: ${productoDetalles.categoria}`);
-            console.log(`Precio: ${productoDetalles.precio} €`);
-            console.log(`Descripción: ${productoDetalles.descripcion}`);
+            // Mostrar detalles en formato JSON bonito y coloreado
+            console.log("\nDetalles del producto:".green);
+            console.log(JSON.stringify(productoDetalles, null, 2).green);
           }
         }
         break;
@@ -254,7 +248,7 @@ async function main() {
         case 1:
           // Registro de usuarios
           const email = readlineSync.questionEMail('Email: ');
-          const password = readlineSync.question('Password: ', { hideEchoBack: true });
+          const password = readlineSync.question('Password: ', { mask: '*' });
           const nombre = readlineSync.question('Nombre: ');
           const apellidos = readlineSync.question('Apellidos: ');
           const edad = readlineSync.questionInt('Edad: ');
@@ -264,7 +258,7 @@ async function main() {
         case 2:
           // Inicio de sesión
           const loginEmail = readlineSync.questionEMail('Email: ');
-          const loginPassword = readlineSync.question('Password: ', { hideEchoBack: true });
+          const loginPassword = readlineSync.question('Password: ', { mask: '*' });
           const user = await loginUser(loginEmail, loginPassword);
 
           if (user) {
