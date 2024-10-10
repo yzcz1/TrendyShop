@@ -48,7 +48,6 @@ async function initializeAdmin() {
       });
       console.log("Administrador inicializado correctamente.");
     } 
-    
   } catch (error) {
     console.error('Error al inicializar el administrador:', error.message);
   }
@@ -70,7 +69,8 @@ async function registerUser(email, password, nombre, apellidos, edad) {
       rol: newUser.rol
     });
 
-    console.log("Usuario registrado exitosamente.".green);
+    console.log("\nUsuario registrado exitosamente.".green);
+
     return newUser;
   } catch (error) {
     console.error("Error al registrar el usuario:", error.message);
@@ -167,11 +167,24 @@ async function forgotPassword(email) {
 
 // ------------------------ Gestión de Productos ------------------------
 
-// Obtener el próximo ID secuencial de producto
+// Obtener el próximo ID secuencial basado en el valor máximo actual
 async function obtenerSiguienteIdSecuencial() {
-  const productosSnapshot = await getDocs(collection(db, "productos"));
-  const productos = productosSnapshot.docs.map((doc) => doc.data());
-  return productos.length + 1;
+  try {
+    const productosSnapshot = await getDocs(collection(db, "productos"));
+    const productos = productosSnapshot.docs.map((doc) => doc.data());
+    
+    // Si no hay productos, el próximo ID secuencial es 1
+    if (productos.length === 0) {
+      return 1;
+    }
+
+    // Encontrar el idSecuencial máximo y sumar 1
+    const maxIdSecuencial = Math.max(...productos.map(producto => producto.idSecuencial));
+    return maxIdSecuencial + 1;
+  } catch (error) {
+    console.error("Error al obtener el siguiente ID secuencial:", error.message);
+    return null;
+  }
 }
 
 // Crear nuevo producto
