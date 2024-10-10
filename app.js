@@ -26,11 +26,11 @@ function showMainMenu() {
 
 // Menú para usuarios normales
 function showUserMenu() {
-  console.log('\n--- Menú de Usuario ---'.bgGreen.white.bold);
+  console.log('\n--- Menú de Usuario ---'.bgWhite.black.bold);
   console.log('1. Modificar mis datos'.white);
   console.log('2. Eliminar mi usuario'.red);
   console.log('3. Listado de productos'.cyan);
-  console.log('4. Ver detalles de un producto específico'.cyan);
+  console.log('4. Ver detalles de un producto específico'.green);
   console.log('5. Cerrar sesión'.yellow);
 }
 
@@ -40,11 +40,11 @@ function showAdminMenu() {
   console.log('1. Modificar mis datos'.white);
   console.log('2. Eliminar mi usuario'.red);
   console.log('3. Crear un nuevo producto'.cyan);
-  console.log('4. Listado de todos los productos'.green);
-  console.log('5. Detalles de un producto en específico'.yellow);
-  console.log('6. Editar un producto'.yellow);
-  console.log('7. Eliminar un producto'.yellow);
-  console.log('8. Cerrar sesión'.yellow);
+  console.log('4. Listado de todos los productos'.blue);
+  console.log('5. Detalles de un producto en específico'.magenta);
+  console.log('6. Editar un producto'.white);
+  console.log('7. Eliminar un producto'.red);
+  console.log('8. Cerrar sesión'.grey);
 }
 
 // Función para obtener producto por su ID secuencial
