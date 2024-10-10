@@ -35,19 +35,6 @@ function showAdminMenu() {
   console.log('8. Cerrar sesión'.yellow);
 }
 
-// Función para obtener los datos del usuario desde Firestore
-async function obtenerDatosUsuario(uid) {
-  const userRef = doc(db, 'users', uid);
-  const userSnap = await getDoc(userRef);
-
-  if (userSnap.exists()) {
-    return userSnap.data();
-  } else {
-    console.log('El usuario no existe.');
-    return null;
-  }
-}
-
 // Función principal que inicia el menú de la aplicación
 async function main() {
   await initializeAdmin(); // Inicializar el administrador si no existe
@@ -77,7 +64,7 @@ async function main() {
           const user = await loginUser(loginEmail, loginPassword);
 
           if (user) {
-            if (user.email === 'admin@gmail.com') {
+            if (user.admin) {
               console.log('Bienvenido Administrador');
               userLogged = { ...user, admin: true };
             } else {

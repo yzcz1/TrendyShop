@@ -45,6 +45,9 @@ async function initializeAdmin() {
         email: newAdmin.email,
         rol: newAdmin.rol
       });
+      console.log("Administrador inicializado correctamente.");
+    } else {
+      console.log("El administrador ya existe.");
     }
   } catch (error) {
     console.error('Error al inicializar el administrador:', error.message);
@@ -85,7 +88,13 @@ async function loginUser(email, password) {
     if (userDoc.exists()) {
       const userData = userDoc.data();
       console.log("Usuario inició sesión exitosamente.".green);
-      return { ...userData, uid: user.uid }; // Devolver los datos del usuario correctamente
+
+      // Verifica si es administrador
+      if (userData.rol === 'admin') {
+        return { ...userData, uid: user.uid, admin: true }; // Marcar como admin
+      } else {
+        return { ...userData, uid: user.uid, admin: false }; // Usuario normal
+      }
     } else {
       console.error("El usuario no tiene datos asociados.");
       return null;
