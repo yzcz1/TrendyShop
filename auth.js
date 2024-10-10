@@ -2,12 +2,13 @@ import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, s
 
 // Clase para representar un usuario con datos adicionales
 class User {
-  constructor(uid, nombre, apellidos, edad, email) {
+  constructor(uid, nombre, apellidos, edad, email, rol = 'usuario') {
     this.uid = uid;
     this.nombre = nombre;
     this.apellidos = apellidos;
     this.edad = edad;
     this.email = email;
+    this.rol = rol; // Añadido rol para gestionar el admin
   }
 }
 
@@ -23,7 +24,34 @@ class Producto {
 }
 
 // ------------------------ Gestión de Usuarios ------------------------
-// Función para registrar un usuario con datos adicionales
+// Función para inicializar el administrador si no existe
+async function initializeAdmin() {
+  const adminEmail = 'admin@gmail.com';
+  const adminPassword = 'administrador';
+
+  try {
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const adminExists = usersSnapshot.docs.some(doc => doc.data().email === adminEmail);
+
+    if (!adminExists) {
+      const adminCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+      const adminUser = adminCredential.user;
+
+      const newAdmin = new User(adminUser.uid, 'Administrador', 'A B', 21, adminEmail, 'admin');
+      await setDoc(doc(db, 'users', adminUser.uid), {
+        nombre: newAdmin.nombre,
+        apellidos: newAdmin.apellidos,
+        edad: newAdmin.edad,
+        email: newAdmin.email,
+        rol: newAdmin.rol
+      });
+    }
+  } catch (error) {
+    console.error('Error al inicializar el administrador:', error.message);
+  }
+}
+
+// Función para registrar un usuario con datos adicionales (no para admin)
 async function registerUser(email, password, nombre, apellidos, edad) {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -35,17 +63,14 @@ async function registerUser(email, password, nombre, apellidos, edad) {
       nombre: newUser.nombre,
       apellidos: newUser.apellidos,
       edad: newUser.edad,
-      email: newUser.email
+      email: newUser.email,
+      rol: newUser.rol
     });
 
-    console.log("Usuario registrado y guardado en Firestore:", newUser);
+    console.log("Usuario registrado exitosamente.".green);
     return newUser;
   } catch (error) {
-    if (error.code === 'auth/email-already-in-use') {
-      console.error("Este usuario ya está registrado, prueba con otro correo electrónico.");
-    } else {
-      console.error("Error al registrar el usuario:", error.message);
-    }
+    console.error("Error al registrar el usuario:", error.message);
     return null;
   }
 }
@@ -55,8 +80,16 @@ async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    console.log("Usuario inició sesión:", user);
-    return user; 
+
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      console.log("Usuario inició sesión exitosamente.".green);
+      return { ...userData, uid: user.uid }; // Devolver los datos del usuario correctamente
+    } else {
+      console.error("El usuario no tiene datos asociados.");
+      return null;
+    }
   } catch (error) {
     console.error("Error al iniciar sesión:", error.message);
     return null;
@@ -151,7 +184,7 @@ async function listarProductos() {
       id: doc.id,
       ...doc.data()
     }));
-    return productosList;
+    return productosList.length ? productosList : null; // Devuelve null si no hay productos
   } catch (error) {
     console.error("Error al listar productos:", error.message);
     return [];
@@ -201,4 +234,4 @@ async function eliminarProducto(id) {
   }
 }
 
-export { registerUser, loginUser, logoutUser, forgotPassword, modifyUserData, deleteUserAccount, createProducto, listarProductos, obtenerProducto, modificarProducto, eliminarProducto };
+export { registerUser, loginUser, logoutUser, forgotPassword, modifyUserData, deleteUserAccount, createProducto, listarProductos, obtenerProducto, modificarProducto, eliminarProducto, initializeAdmin };
