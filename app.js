@@ -1,7 +1,19 @@
 import readlineSync from 'readline-sync';
 import colors from 'colors';
-import { registerUser, loginUser, logoutUser, forgotPassword, modifyUserData, deleteUserAccount, createProducto, listarProductos, obtenerProducto, modificarProducto, eliminarProducto, initializeAdmin } from './auth.js';
-import { doc, getDoc, db } from './firebase.js';
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  forgotPassword,
+  modifyUserData,
+  deleteUserAccount,
+  createProducto,
+  listarProductos,
+  obtenerProducto,
+  modificarProducto,
+  eliminarProducto,
+  initializeAdmin
+} from './auth.js';
 
 // Mostrar el menú inicial
 function showMainMenu() {
@@ -33,6 +45,198 @@ function showAdminMenu() {
   console.log('6. Editar un producto'.yellow);
   console.log('7. Eliminar un producto'.yellow);
   console.log('8. Cerrar sesión'.yellow);
+}
+
+// Función para obtener producto por su ID secuencial
+async function obtenerProductoPorIdSecuencial(idSecuencial) {
+  const productos = await listarProductos();
+  if (productos) {
+    return productos.find(producto => producto.idSecuencial === idSecuencial);
+  }
+  return null;
+}
+
+// Función para manejar el menú del administrador
+async function handleAdminMenu(userLogged) {
+  let adminOption = '';
+  while (adminOption !== '8') {
+    showAdminMenu();
+    adminOption = readlineSync.questionInt('Seleccione una opción: ');
+
+    switch (adminOption) {
+      case 1:
+        // Modificar mis datos
+        const newNombre = readlineSync.question('Nuevo nombre: ');
+        const newApellidos = readlineSync.question('Nuevos apellidos: ');
+        const newEdad = readlineSync.questionInt('Nueva edad: ');
+        await modifyUserData(userLogged.uid, newNombre, newApellidos, newEdad);
+        break;
+
+      case 2:
+        // Eliminar mi usuario
+        await deleteUserAccount(userLogged.uid);
+        console.log("Usuario eliminado. Cerrando sesión...");
+        return null; // Cerrar sesión
+        break;
+
+      case 3:
+        // Crear nuevo producto
+        const prodNombre = readlineSync.question('Nombre del producto: ');
+        const prodCategoria = readlineSync.question('Categoria: ');
+        const prodPrecio = readlineSync.questionFloat('Precio: ');
+        const prodDescripcion = readlineSync.question('Descripción: ');
+        const nuevoProducto = await createProducto(prodNombre, prodCategoria, prodPrecio, prodDescripcion);
+        console.log(`${nuevoProducto.idSecuencial}. ${nuevoProducto.nombre} (${nuevoProducto.categoria}) - ${nuevoProducto.precio} €`);
+        break;
+
+      case 4:
+        // Listado de productos
+        const productosListado = await listarProductos();
+        if (!productosListado) {
+          console.log("No hay productos disponibles.".yellow);
+        } else {
+          productosListado.forEach((producto) => {
+            console.log(`${producto.idSecuencial}. ${producto.nombre} (${producto.categoria}) - ${producto.precio} €`);
+          });
+        }
+        break;
+
+      case 5:
+        // Ver detalles de producto específico
+        const productosDetalles = await listarProductos();
+        if (!productosDetalles) {
+          console.log("No hay productos disponibles.".yellow);
+        } else {
+          const prodIdSecuencial = readlineSync.questionInt('ID del producto a ver: ');
+          const productoDetalles = await obtenerProductoPorIdSecuencial(prodIdSecuencial);
+          if (!productoDetalles) {
+            console.log("El producto no existe.".red);
+          } else {
+            console.log("Detalles del producto: ");
+            console.log(`Nombre: ${productoDetalles.nombre}`);
+            console.log(`Categoría: ${productoDetalles.categoria}`);
+            console.log(`Precio: ${productoDetalles.precio} €`);
+            console.log(`Descripción: ${productoDetalles.descripcion}`);
+          }
+        }
+        break;
+
+      case 6:
+        // Editar un producto
+        const productosEditar = await listarProductos();
+        if (!productosEditar) {
+          console.log("No hay productos disponibles para editar.".yellow);
+        } else {
+          const prodIdEditar = readlineSync.questionInt('ID del producto a editar: ');
+          const productoEditar = await obtenerProductoPorIdSecuencial(prodIdEditar);
+          if (!productoEditar) {
+            console.log("El producto no existe.".red);
+          } else {
+            const newNombreProd = readlineSync.question('Nuevo nombre: ');
+            const newCategoria = readlineSync.question('Nueva categoría: ');
+            const newPrecio = readlineSync.questionFloat('Nuevo precio: ');
+            const newDescripcion = readlineSync.question('Nueva descripción: ');
+            await modificarProducto(productoEditar.id, newNombreProd, newCategoria, newPrecio, newDescripcion);
+          }
+        }
+        break;
+
+      case 7:
+        // Eliminar un producto
+        const productosEliminar = await listarProductos();
+        if (!productosEliminar) {
+          console.log("No hay productos disponibles para eliminar.".yellow);
+        } else {
+          const prodIdEliminar = readlineSync.questionInt('ID del producto a eliminar: ');
+          const productoEliminar = await obtenerProductoPorIdSecuencial(prodIdEliminar);
+          if (!productoEliminar) {
+            console.log("El producto no existe.".red);
+          } else {
+            await eliminarProducto(productoEliminar.id);
+            console.log("Producto eliminado correctamente.".green);
+          }
+        }
+        break;
+
+      case 8:
+        // Cerrar sesión (para admin)
+        await logoutUser();
+        console.log('Sesión cerrada correctamente.'.yellow);
+        return null; // Cerrar sesión
+        break;
+
+      default:
+        console.log('Opción no válida.'.red);
+    }
+  }
+}
+
+// Función para manejar el menú del usuario normal
+async function handleUserMenu(userLogged) {
+  let userOption = '';
+  while (userOption !== '5') {
+    showUserMenu();
+    userOption = readlineSync.questionInt('Seleccione una opción: ');
+
+    switch (userOption) {
+      case 1:
+        // Modificar mis datos
+        const newNombre = readlineSync.question('Nuevo nombre: ');
+        const newApellidos = readlineSync.question('Nuevos apellidos: ');
+        const newEdad = readlineSync.questionInt('Nueva edad: ');
+        await modifyUserData(userLogged.uid, newNombre, newApellidos, newEdad);
+        break;
+
+      case 2:
+        // Eliminar mi usuario
+        await deleteUserAccount(userLogged.uid);
+        console.log("Usuario eliminado. Cerrando sesión...");
+        return null; // Cerrar sesión
+        break;
+
+      case 3:
+        // Listar productos (para usuarios normales)
+        const productos = await listarProductos();
+        if (!productos) {
+          console.log("No hay productos disponibles.".yellow);
+        } else {
+          productos.forEach((producto) => {
+            console.log(`${producto.idSecuencial}. ${producto.nombre} (${producto.categoria}) - ${producto.precio} €`);
+          });
+        }
+        break;
+
+      case 4:
+        // Ver detalles de producto específico (para usuarios normales)
+        const productosDetalles = await listarProductos();
+        if (!productosDetalles) {
+          console.log("No hay productos disponibles.".yellow);
+        } else {
+          const prodIdSecuencial = readlineSync.questionInt('ID del producto a ver: ');
+          const productoDetalles = await obtenerProductoPorIdSecuencial(prodIdSecuencial);
+          if (!productoDetalles) {
+            console.log("El producto no existe.".red);
+          } else {
+            console.log("Detalles del producto: ");
+            console.log(`Nombre: ${productoDetalles.nombre}`);
+            console.log(`Categoría: ${productoDetalles.categoria}`);
+            console.log(`Precio: ${productoDetalles.precio} €`);
+            console.log(`Descripción: ${productoDetalles.descripcion}`);
+          }
+        }
+        break;
+
+      case 5:
+        // Cerrar sesión (para usuarios normales)
+        await logoutUser();
+        console.log('Sesión cerrada correctamente.'.yellow);
+        return null; // Cerrar sesión
+        break;
+
+      default:
+        console.log('Opción no válida.'.red);
+    }
+  }
 }
 
 // Función principal que inicia el menú de la aplicación
@@ -67,8 +271,10 @@ async function main() {
             if (user.admin) {
               console.log('Bienvenido Administrador');
               userLogged = { ...user, admin: true };
+              userLogged = await handleAdminMenu(userLogged);
             } else {
               userLogged = { ...user, admin: false };
+              userLogged = await handleUserMenu(userLogged);
             }
           } else {
             console.log('Error al iniciar sesión.'.red);
@@ -89,123 +295,7 @@ async function main() {
           break;
 
         default:
-          console.log('Opción no válida.');
-      }
-    } else {
-      if (userLogged.admin) {
-        showAdminMenu();
-      } else {
-        showUserMenu();
-      }
-      const userOption = readlineSync.questionInt('Seleccione una opción: ');
-
-      switch (userOption) {
-        case 1:
-          // Modificar mis datos
-          const newNombre = readlineSync.question('Nuevo nombre: ');
-          const newApellidos = readlineSync.question('Nuevos apellidos: ');
-          const newEdad = readlineSync.questionInt('Nueva edad: ');
-          await modifyUserData(userLogged.uid, newNombre, newApellidos, newEdad);
-          break;
-
-        case 2:
-          // Eliminar mi usuario
-          await deleteUserAccount(userLogged.uid);
-          console.log("Usuario eliminado. Cerrando sesión...");
-          userLogged = null;
-          break;
-
-        case 3:
-          if (userLogged.admin) {
-            // Crear nuevo producto
-            const prodNombre = readlineSync.question('Nombre del producto: ');
-            const prodCategoria = readlineSync.question('Categoria: ');
-            const prodPrecio = readlineSync.questionFloat('Precio: ');
-            const prodDescripcion = readlineSync.question('Descripción: ');
-            await createProducto(prodNombre, prodCategoria, prodPrecio, prodDescripcion);
-          } else {
-            // Listar productos (para usuarios normales)
-            const productos = await listarProductos();
-            if (!productos) {
-              console.log("No hay productos disponibles.".yellow);
-            } else {
-              console.log("Productos disponibles: ", productos);
-            }
-          }
-          break;
-
-        case 4:
-          if (userLogged.admin) {
-            // Listado de productos (para admin)
-            const productos = await listarProductos();
-            if (!productos) {
-              console.log("No hay productos disponibles.".yellow);
-            } else {
-              console.log("Productos disponibles: ", productos);
-            }
-          } else {
-            // Ver detalles de producto específico (para usuarios normales)
-            const prodId = readlineSync.question('ID del producto: ');
-            if (isNaN(prodId)) {
-              console.log("Presiona un ID numérico válido.".red);
-            } else {
-              const producto = await obtenerProducto(prodId);
-              if (!producto) {
-                console.log("El producto con este ID que has presionado no existe.".red);
-              } else {
-                console.log("Detalles del producto: ", producto);
-              }
-            }
-          }
-          break;
-
-        case 5:
-          if (userLogged.admin) {
-            // Detalles de un producto específico (para admin)
-            const prodId = readlineSync.question('ID del producto a ver: ');
-            const producto = await obtenerProducto(prodId);
-            if (!producto) {
-              console.log("El producto no existe.".red);
-            } else {
-              console.log("Detalles del producto: ", producto);
-            }
-          } else {
-            // Cerrar sesión (para usuarios normales)
-            await logoutUser();
-            userLogged = null;
-          }
-          break;
-
-        case 6:
-          if (userLogged.admin) {
-            // Editar un producto
-            const prodId = readlineSync.question('ID del producto a editar: ');
-            const newNombreProd = readlineSync.question('Nuevo nombre: ');
-            const newCategoria = readlineSync.question('Nueva categoría: ');
-            const newPrecio = readlineSync.questionFloat('Nuevo precio: ');
-            const newDescripcion = readlineSync.question('Nueva descripción: ');
-            await modificarProducto(prodId, newNombreProd, newCategoria, newPrecio, newDescripcion);
-          }
-          break;
-
-        case 7:
-          if (userLogged.admin) {
-            // Eliminar un producto
-            const prodIdEliminar = readlineSync.question('ID del producto a eliminar: ');
-            await eliminarProducto(prodIdEliminar);
-          }
-          break;
-
-        case 8:
-          if (userLogged.admin) {
-            // Cerrar sesión (para admin)
-            await logoutUser();
-            userLogged = null;
-          }
-          break;
-
-        default:
-          console.log('Opción no válida.');
+          console.log('Opción no válida.'.red);
       }
     }
   }

@@ -1,4 +1,4 @@
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail, setDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, collection } from './firebase.js';
+import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail, setDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, collection, query, orderBy } from './firebase.js';
 
 // Clase para representar un usuario con datos adicionales
 class User {
@@ -14,8 +14,9 @@ class User {
 
 // Clase para representar un Producto
 class Producto {
-  constructor(id, nombre, categoria, precio, descripcion) {
-    this.id = id;
+  constructor(id, idSecuencial, nombre, categoria, precio, descripcion) {
+    this.id = id; // ID generado automáticamente por Firestore
+    this.idSecuencial = idSecuencial; // ID secuencial para el usuario
     this.nombre = nombre;
     this.categoria = categoria;
     this.precio = precio;
@@ -46,9 +47,8 @@ async function initializeAdmin() {
         rol: newAdmin.rol
       });
       console.log("Administrador inicializado correctamente.");
-    } else {
-      console.log("El administrador ya existe.");
-    }
+    } 
+    
   } catch (error) {
     console.error('Error al inicializar el administrador:', error.message);
   }
@@ -166,18 +166,30 @@ async function forgotPassword(email) {
 }
 
 // ------------------------ Gestión de Productos ------------------------
+
+// Obtener el próximo ID secuencial de producto
+async function obtenerSiguienteIdSecuencial() {
+  const productosSnapshot = await getDocs(collection(db, "productos"));
+  const productos = productosSnapshot.docs.map((doc) => doc.data());
+  return productos.length + 1;
+}
+
 // Crear nuevo producto
 async function createProducto(nombre, categoria, precio, descripcion) {
   try {
-    const productoRef = doc(collection(db, "productos"));
-    const newProducto = new Producto(productoRef.id, nombre, categoria, precio, descripcion);
+    const nextIdSecuencial = await obtenerSiguienteIdSecuencial(); // Obtener el próximo ID secuencial
+    const productoRef = doc(collection(db, "productos")); // Usar ID generado automáticamente por Firestore
+    const newProducto = new Producto(productoRef.id, nextIdSecuencial, nombre, categoria, precio, descripcion);
+    
+    // Guardar el nuevo producto en la base de datos
     await setDoc(productoRef, {
+      idSecuencial: newProducto.idSecuencial,
       nombre: newProducto.nombre,
       categoria: newProducto.categoria,
       precio: newProducto.precio,
       descripcion: newProducto.descripcion
     });
-    console.log("Producto creado exitosamente:", newProducto);
+    console.log("Producto agregado exitosamente.".green);
     return newProducto;
   } catch (error) {
     console.error("Error al crear el producto:", error.message);
@@ -185,12 +197,15 @@ async function createProducto(nombre, categoria, precio, descripcion) {
   }
 }
 
-// Listar todos los productos
+// Listar todos los productos ordenados por idSecuencial
 async function listarProductos() {
   try {
-    const productosSnapshot = await getDocs(collection(db, "productos"));
+    // Utilizamos una consulta para ordenar los productos por 'idSecuencial'
+    const productosQuery = query(collection(db, "productos"), orderBy("idSecuencial", "asc"));
+    const productosSnapshot = await getDocs(productosQuery);
     const productosList = productosSnapshot.docs.map((doc) => ({
       id: doc.id,
+      idSecuencial: doc.data().idSecuencial, // Usamos el idSecuencial para mostrar al usuario
       ...doc.data()
     }));
     return productosList.length ? productosList : null; // Devuelve null si no hay productos
@@ -221,6 +236,13 @@ async function obtenerProducto(id) {
 async function modificarProducto(id, newNombre, newCategoria, newPrecio, newDescripcion) {
   try {
     const productoRef = doc(db, 'productos', id);
+    const productoSnap = await getDoc(productoRef);
+
+    if (!productoSnap.exists()) {
+      console.log("No hay productos para editar.");
+      return;
+    }
+
     await updateDoc(productoRef, {
       nombre: newNombre,
       categoria: newCategoria,
@@ -236,7 +258,15 @@ async function modificarProducto(id, newNombre, newCategoria, newPrecio, newDesc
 // Eliminar un producto
 async function eliminarProducto(id) {
   try {
-    await deleteDoc(doc(db, "productos", id));
+    const productoRef = doc(db, "productos", id);
+    const productoSnap = await getDoc(productoRef);
+
+    if (!productoSnap.exists()) {
+      console.log("No hay productos para eliminar.");
+      return;
+    }
+
+    await deleteDoc(productoRef);
     console.log("Producto eliminado correctamente.");
   } catch (error) {
     console.error("Error al eliminar el producto:", error.message);

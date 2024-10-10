@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail } from "firebase/auth";
-import { getFirestore, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, collection } from "firebase/firestore"; // Importar Firestore
+import { getFirestore, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, collection, query, orderBy } from "firebase/firestore"; // Añadir query y orderBy
 
 // Firebase configuration (reemplaza con la tuya de Firebase Console)
 const firebaseConfig = {
@@ -18,5 +18,5 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app); // Inicializar Firestore
 
-// Exportar funcionalidades de Firebase
-export { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail, setDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, collection };
+// Exportar funcionalidades de Firebase, incluyendo query y orderBy
+export { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, deleteUser, sendPasswordResetEmail, setDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, collection, query, orderBy };
