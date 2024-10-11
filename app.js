@@ -13,7 +13,7 @@ import {
   modificarProducto,
   eliminarProducto,
   initializeAdmin
-} from './auth.js';
+} from './authAndProduct.js';
 
 // Mostrar el menú inicial
 function showMainMenu() {
