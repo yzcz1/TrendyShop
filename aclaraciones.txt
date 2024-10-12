@@ -1,3 +1,13 @@
-necesitas instalar las dependencias:
--Hacer npm install
--npm install readline-sync
+Si no tienes instalado Node.js abre un navegador web y ve al sitio oficial de Node.js.
+https://nodejs.org/en/
+
+Descarga la versión LTS (Long Term Support) para Windows, es el botón verde.
+Una vez descargado, ejecuta el instalador.
+
+Asegúrate de seleccionar la opción "Add to PATH" cuando el instalador te pregunte
+
+Y el resto es darle todo el rato a next y seguir las instrucciones en pantalla hasta completar la instalación.
+Con esto tendrás instaldo node y npm.
+
+Luego cuando estes en la carpeta TrendyShop pon el comando (npm install) para instalar todas las dependecias que hay en el package.json.
+Y despues de eso se inicia el programa con el comando (node app.js).

@@ -18,33 +18,33 @@ import {
 // Mostrar el menú inicial
 function showMainMenu() {
   console.log('\n--- Menu de TrendyShop ---'.bgCyan.white.bold);
-  console.log('1. Registrar usuario'.white);
-  console.log('2. Iniciar sesión'.green);
-  console.log('3. Restablecer contraseña'.cyan);
-  console.log('4. Salir'.red);
+  console.log('1. Registrar usuario'.red.bold);
+  console.log('2. Iniciar sesión'.blue.bold);
+  console.log('3. Restablecer contraseña'.yellow.bold);
+  console.log('4. Salir'.grey.bold);
 }
 
 // Menú para usuarios normales
 function showUserMenu() {
   console.log('\n--- Menú de Usuario ---'.bgWhite.black.bold);
-  console.log('1. Modificar mis datos'.white);
-  console.log('2. Eliminar mi usuario'.red);
-  console.log('3. Listado de productos'.cyan);
-  console.log('4. Ver detalles de un producto específico'.green);
-  console.log('5. Cerrar sesión'.yellow);
+  console.log('1. Modificar mis datos'.magenta.bold);
+  console.log('2. Eliminar mi usuario'.grey.bold);
+  console.log('3. Listado de productos'.cyan.bold);
+  console.log('4. Ver detalles de un producto específico'.blue.bold);
+  console.log('5. Cerrar sesión'.red.bold);
 }
 
 // Menú para el administrador
 function showAdminMenu() {
   console.log('\n--- Menú de Administrador ---'.bgGreen.white.bold);
-  console.log('1. Modificar mis datos'.white);
-  console.log('2. Eliminar mi usuario'.red);
-  console.log('3. Crear un nuevo producto'.cyan);
-  console.log('4. Listado de todos los productos'.blue);
-  console.log('5. Detalles de un producto en específico'.magenta);
-  console.log('6. Editar un producto'.white);
-  console.log('7. Eliminar un producto'.red);
-  console.log('8. Cerrar sesión'.grey);
+  console.log('1. Modificar mis datos'.cyan.bold);
+  console.log('2. Eliminar mi usuario'.white.bold);
+  console.log('3. Crear un nuevo producto'.magenta.bold);
+  console.log('4. Listado de todos los productos'.yellow.bold);
+  console.log('5. Detalles de un producto en específico'.grey.bold);
+  console.log('6. Editar un producto'.green.bold);
+  console.log('7. Eliminar un producto'.red.bold);
+  console.log('8. Cerrar sesión'.blue.bold);
 }
 
 // Función para obtener producto por su ID secuencial
